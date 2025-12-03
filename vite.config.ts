@@ -6,6 +6,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/netflix-demo/', // 이 줄 추가!
   plugins: [
     vue(),
     vueDevTools(),
