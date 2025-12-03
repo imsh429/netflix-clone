@@ -1,0 +1,282 @@
+/* ==================== Breakpoints ==================== */
+/*
+  Mobile: < 768px
+  Tablet: 768px ~ 1024px
+  Desktop: > 1024px
+*/
+
+/* ==================== Mobile (< 768px) ==================== */
+@media (max-width: 767px) {
+  /* Typography */
+  :root {
+    --font-xs: 0.625rem;
+    --font-sm: 0.75rem;
+    --font-md: 0.875rem;
+    --font-lg: 1rem;
+    --font-xl: 1.25rem;
+    --font-xxl: 1.5rem;
+  }
+
+  /* Container */
+  .container {
+    padding: 0 var(--spacing-sm);
+  }
+
+  /* Movie Grid */
+  .movie-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Header */
+  .app-header {
+    padding: 0.5rem 1rem !important;
+    flex-direction: column !important;
+    gap: 0.5rem;
+  }
+
+  .app-header nav {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .app-header nav a {
+    font-size: var(--font-sm);
+    padding: 0.5rem;
+    text-align: center;
+  }
+
+  /* Movie Card */
+  .movie-card {
+    font-size: var(--font-sm);
+  }
+
+  .movie-card .movie-info {
+    padding: 0.5rem !important;
+  }
+
+  .movie-card h3 {
+    font-size: var(--font-md);
+  }
+
+  .movie-card .overview {
+    display: none; /* 모바일에서는 설명 숨김 */
+  }
+
+  /* Pagination */
+  .pagination {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .pagination button {
+    width: 100%;
+    padding: 0.75rem;
+  }
+
+  /* Filter Panel */
+  .filter-panel {
+    flex-direction: column !important;
+    padding: 1rem !important;
+  }
+
+  .filter-group {
+    width: 100% !important;
+  }
+
+  /* Auth Forms */
+  .auth-container {
+    padding: 1rem !important;
+  }
+
+  .login-form,
+  .signup-form {
+    max-width: 100% !important;
+    padding: 1.5rem !important;
+  }
+
+  /* Buttons */
+  button {
+    padding: 0.75rem 1rem;
+    font-size: var(--font-sm);
+  }
+
+  /* Top Button */
+  .top-button {
+    width: 40px !important;
+    height: 40px !important;
+    bottom: 1rem !important;
+    right: 1rem !important;
+  }
+
+  /* View Toggle */
+  .view-toggle {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .view-toggle button {
+    width: 100%;
+  }
+
+  /* Movie Table */
+  .movie-table {
+    overflow-x: auto;
+  }
+
+  /* Section Spacing */
+  .movie-section {
+    padding: 1rem 0 !important;
+  }
+
+  .movie-section h2 {
+    font-size: var(--font-lg);
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* ==================== Tablet (768px ~ 1024px) ==================== */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Movie Grid */
+  .movie-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Container */
+  .container {
+    padding: 0 var(--spacing-md);
+  }
+
+  /* Header */
+  .app-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .app-header nav a {
+    font-size: var(--font-sm);
+  }
+
+  /* Movie Card */
+  .movie-card .overview {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Filter Panel */
+  .filter-panel {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .filter-group {
+    flex: 1 1 calc(50% - 0.5rem);
+    min-width: 200px;
+  }
+}
+
+/* ==================== Desktop (> 1024px) ==================== */
+@media (min-width: 1025px) {
+  /* Movie Grid */
+  .movie-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+    gap: 1rem !important;
+  }
+
+  /* Large Desktop */
+  @media (min-width: 1400px) {
+    .movie-grid {
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+    }
+  }
+}
+
+/* ==================== Orientation ==================== */
+@media (orientation: landscape) and (max-height: 600px) {
+  .app-header {
+    padding: 0.5rem 1rem;
+  }
+
+  .movie-section {
+    padding: 0.5rem 0;
+  }
+}
+
+/* ==================== Touch Devices ==================== */
+@media (hover: none) and (pointer: coarse) {
+  /* 터치 디바이스에서는 호버 대신 탭 효과 */
+  .movie-card:active {
+    transform: scale(0.98);
+  }
+
+  button:active {
+    transform: scale(0.98);
+  }
+
+  /* 터치 영역 확대 */
+  button,
+  a,
+  .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* 스크롤 최적화 */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ==================== Print ==================== */
+@media print {
+  .app-header,
+  .filter-panel,
+  .view-toggle,
+  .top-button,
+  button {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+
+  .movie-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+/* ==================== Reduced Motion ==================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==================== Dark Mode Override (Optional) ==================== */
+@media (prefers-color-scheme: light) {
+  /* Netflix는 항상 다크모드이지만, 필요시 라이트 모드 지원 가능 */
+  /* 현재는 다크모드만 지원 */
+}
+
+/* ==================== High Contrast Mode ==================== */
+@media (prefers-contrast: high) {
+  :root {
+    --primary-red: #ff0000;
+    --text-white: #ffffff;
+    --primary-black: #000000;
+  }
+
+  button,
+  a {
+    border: 2px solid currentColor;
+  }
+}
