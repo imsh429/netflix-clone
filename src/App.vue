@@ -1,85 +1,169 @@
-<script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+  <div id="app">
+    <!-- 로그인 상태일 때만 Header 표시 -->
+    <Header v-if="authStore.isLoggedIn" />
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+    <!-- 페이지 컨텐츠 -->
+    <main :class="{ 'with-header': authStore.isLoggedIn }">
+      <RouterView />
+    </main>
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+<script setup lang="ts">
+import { RouterView } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import Header from '@/components/common/Header.vue'
+
+const authStore = useAuthStore()
+</script>
+
+<style>
+/* 전역 스타일 리셋 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
+html,
+body {
+  margin: 0;
+  padding: 0;
   width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+  height: 100%;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
+#app {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+  sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #141414;
+  color: #fff;
 }
 
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
+main {
+  width: 100%;
+  min-height: 100vh;
 }
 
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
+main.with-header {
+  padding-top: 70px; /* Header 높이만큼 여백 */
 }
 
-nav a:first-of-type {
-  border: 0;
+/* 스크롤바 스타일 (Netflix 스타일) */
+::-webkit-scrollbar {
+  width: 12px;
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
+::-webkit-scrollbar-track {
+  background: #141414;
+}
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 6px;
+}
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
 
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
+/* 링크 기본 스타일 */
+a {
+  text-decoration: none;
+  color: inherit;
+}
 
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+/* 버튼 기본 스타일 */
+button {
+  font-family: inherit;
+}
+</style><template>
+  <div id="app">
+    <!-- 로그인 상태일 때만 Header 표시 -->
+    <Header v-if="authStore.isLoggedIn" />
+
+    <!-- 페이지 컨텐츠 -->
+    <main :class="{ 'with-header': authStore.isLoggedIn }">
+      <RouterView />
+    </main>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { RouterView } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import Header from '@/components/common/Header.vue'
+
+const authStore = useAuthStore()
+</script>
+
+<style>
+/* 전역 스타일 리셋 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#app {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+  sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #141414;
+  color: #fff;
+}
+
+main {
+  width: 100%;
+  min-height: 100vh;
+}
+
+main.with-header {
+  padding-top: 70px; /* Header 높이만큼 여백 */
+}
+
+/* 스크롤바 스타일 (Netflix 스타일) */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #141414;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+/* 링크 기본 스타일 */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 버튼 기본 스타일 */
+button {
+  font-family: inherit;
 }
 </style>
