@@ -1,36 +1,62 @@
+// src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
-import { isAuthenticated } from '@/services/auth'
+import { getLoginStatus } from '@/utils/localStorage'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      name: 'home',
-      redirect: '/signin' // 임시로 signin으로 리다이렉트
-    },
-    {
       path: '/signin',
-      name: 'signin',
+      name: 'SignIn',
       component: () => import('@/views/SignIn.vue'),
       meta: { requiresAuth: false }
+    },
+    {
+      path: '/',
+      name: 'Home',
+      component: () => import('@/views/Home.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/popular',
+      name: 'Popular',
+      component: () => import('@/views/Popular.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/search',
+      name: 'Search',
+      component: () => import('@/views/Search.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/wishlist',
+      name: 'Wishlist',
+      component: () => import('@/views/Wishlist.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      // 404 페이지
+      path: '/:pathMatch(.*)*',
+      redirect: '/'
     }
   ]
 })
 
-// 네비게이션 가드 - 인증 체크
+// 인증 가드 (Navigation Guard)
 router.beforeEach((to, from, next) => {
-  const requiresAuth = to.meta.requiresAuth
-  const authenticated = isAuthenticated()
+  const { isLoggedIn } = getLoginStatus()
 
-  if (requiresAuth && !authenticated) {
-    // 인증이 필요한 페이지인데 로그인하지 않은 경우
+  // 인증이 필요한 페이지인데 로그인 안 됨
+  if (to.meta.requiresAuth && !isLoggedIn) {
     next('/signin')
-  } else if (to.path === '/signin' && authenticated) {
-    // 이미 로그인한 상태에서 로그인 페이지 접근 시 홈으로
-    // TODO: 홈 페이지 만들면 '/'로 변경
-    next('/signin') // 임시로 signin 유지
-  } else {
+  }
+  // 로그인 페이지인데 이미 로그인 됨
+  else if (to.path === '/signin' && isLoggedIn) {
+    next('/')
+  }
+  // 정상 진행
+  else {
     next()
   }
 })
