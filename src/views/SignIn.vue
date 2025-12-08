@@ -149,7 +149,7 @@
                 type="password"
                 placeholder="비밀번호를 다시 입력하세요"
                 required
-                @blur="checkPasswordConfirm"
+                @blur="validatePasswordConfirm"
               />
               <span v-if="signupErrors.passwordConfirm" class="error-message">
                 {{ signupErrors.passwordConfirm }}
@@ -210,12 +210,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import { useAuthStore } from '@/stores/auth'
-import {
-  validateEmail,
-  validatePassword,
-  validatePasswordConfirm as validatePasswordMatch,  // ← 이름 변경!
-  validateAgreement
-} from '@/utils/validators'
+import { validateEmail, validatePassword, validatePasswordConfirm, validateAgreement } from '@/utils/validators'
 
 const router = useRouter()
 const toast = useToast()
@@ -264,9 +259,8 @@ const validateSignupEmail = () => {
   return result.valid
 }
 
-// ← 함수 이름을 다르게! (충돌 해결)
-const checkPasswordConfirm = () => {
-  const result = validatePasswordMatch(  // ← import한 함수 사용
+const validatePasswordConfirm = () => {
+  const result = validatePasswordConfirm(
     signupForm.value.password,
     signupForm.value.passwordConfirm
   )
@@ -334,7 +328,7 @@ const handleSignup = async () => {
   }
 
   // 비밀번호 확인 검증
-  if (!checkPasswordConfirm()) {  // ← 수정된 함수명
+  if (!validatePasswordConfirm()) {
     return
   }
 

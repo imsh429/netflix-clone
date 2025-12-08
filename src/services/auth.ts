@@ -1,3 +1,4 @@
+// src/services/auth.ts
 import axios from 'axios'
 import type { User } from '@/types/movie'
 import {

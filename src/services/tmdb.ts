@@ -1,39 +1,51 @@
 // src/services/tmdb.ts
 import axios from 'axios'
-import type { MovieResponse, GenresResponse } from '@/types/movie'
+import type { MovieResponse, GenresResponse, Movie } from '@/types/movie'
 
-const API_KEY = import.meta.env.VITE_TMDB_API_KEY
+// 환경변수 또는 Local Storage에서 API 키 가져오기
+const getApiKey = (): string => {
+  return import.meta.env.VITE_TMDB_API_KEY || localStorage.getItem('TMDb-Key') || ''
+}
+
 const BASE_URL = import.meta.env.VITE_TMDB_BASE_URL || 'https://api.themoviedb.org/3'
 const IMAGE_BASE_URL = import.meta.env.VITE_TMDB_IMAGE_BASE_URL || 'https://image.tmdb.org/t/p'
 
-// API 클라이언트 생성
+// Axios 인스턴스 생성
 const tmdbClient = axios.create({
   baseURL: BASE_URL,
+  timeout: 10000,
   params: {
-    api_key: API_KEY,
     language: 'ko-KR'
-  },
-  timeout: 10000 // 10초 타임아웃
-})
-
-// 동적으로 API 키 가져오기 (로그인 시 저장된 키 우선 사용)
-const getApiKey = (): string => {
-  const storedKey = localStorage.getItem('TMDb-Key')
-  return storedKey || API_KEY || ''
-}
-
-// API 요청 인터셉터 - 동적으로 API 키 설정
-tmdbClient.interceptors.request.use(config => {
-  const apiKey = getApiKey()
-  if (config.params) {
-    config.params.api_key = apiKey
-  } else {
-    config.params = { api_key: apiKey }
   }
-  return config
 })
 
-// ==================== 1. 인기 영화 (Popular) ====================
+// Request Interceptor - API 키 자동 추가
+tmdbClient.interceptors.request.use(
+  (config) => {
+    const apiKey = getApiKey()
+    if (apiKey) {
+      config.params = {
+        ...config.params,
+        api_key: apiKey
+      }
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
+// Response Interceptor - 에러 처리
+tmdbClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('TMDB API Error:', error.response?.data || error.message)
+    return Promise.reject(error)
+  }
+)
+
+// ==================== 1. 인기 영화 (필수) ====================
 export const fetchPopularMovies = async (page = 1): Promise<MovieResponse> => {
   const response = await tmdbClient.get('/movie/popular', {
     params: { page }
@@ -41,7 +53,7 @@ export const fetchPopularMovies = async (page = 1): Promise<MovieResponse> => {
   return response.data
 }
 
-// ==================== 2. 현재 상영작 (Now Playing) ====================
+// ==================== 2. 현재 상영작 (필수) ====================
 export const fetchNowPlayingMovies = async (page = 1): Promise<MovieResponse> => {
   const response = await tmdbClient.get('/movie/now_playing', {
     params: { page }
@@ -49,7 +61,7 @@ export const fetchNowPlayingMovies = async (page = 1): Promise<MovieResponse> =>
   return response.data
 }
 
-// ==================== 3. 최고 평점 (Top Rated) ====================
+// ==================== 3. 최고 평점 (필수) ====================
 export const fetchTopRatedMovies = async (page = 1): Promise<MovieResponse> => {
   const response = await tmdbClient.get('/movie/top_rated', {
     params: { page }
@@ -57,7 +69,7 @@ export const fetchTopRatedMovies = async (page = 1): Promise<MovieResponse> => {
   return response.data
 }
 
-// ==================== 4. 개봉 예정 (Upcoming) ====================
+// ==================== 4. 개봉 예정 (필수) ====================
 export const fetchUpcomingMovies = async (page = 1): Promise<MovieResponse> => {
   const response = await tmdbClient.get('/movie/upcoming', {
     params: { page }
@@ -73,7 +85,7 @@ export const searchMovies = async (query: string, page = 1): Promise<MovieRespon
   return response.data
 }
 
-// ==================== 6. 장르별 영화 (Discover) ====================
+// ==================== 6. 장르별 영화 ====================
 export const fetchMoviesByGenre = async (
   genreId: number,
   page = 1,
@@ -82,8 +94,8 @@ export const fetchMoviesByGenre = async (
   const response = await tmdbClient.get('/discover/movie', {
     params: {
       with_genres: genreId,
-      sort_by: sortBy,
-      page
+      page,
+      sort_by: sortBy
     }
   })
   return response.data
@@ -95,79 +107,69 @@ export const fetchGenres = async (): Promise<GenresResponse> => {
   return response.data
 }
 
-// ==================== 8. 영화 상세 정보 (Optional) ====================
-export const fetchMovieDetails = async (movieId: number) => {
+// ==================== 8. 영화 상세 정보 ====================
+export const fetchMovieDetails = async (movieId: number): Promise<Movie> => {
   const response = await tmdbClient.get(`/movie/${movieId}`)
   return response.data
 }
 
+// ==================== 9. 다중 필터링 (Discover API) ====================
+export interface DiscoverFilters {
+  sortBy?: string
+  withGenres?: number[]
+  voteAverageGte?: number
+  voteAverageLte?: number
+  releaseDateGte?: string
+  releaseDateLte?: string
+  page?: number
+}
+
+export const discoverMovies = async (filters: DiscoverFilters): Promise<MovieResponse> => {
+  const params: any = {
+    page: filters.page || 1,
+    sort_by: filters.sortBy || 'popularity.desc'
+  }
+
+  if (filters.withGenres && filters.withGenres.length > 0) {
+    params.with_genres = filters.withGenres.join(',')
+  }
+
+  if (filters.voteAverageGte !== undefined) {
+    params['vote_average.gte'] = filters.voteAverageGte
+  }
+
+  if (filters.voteAverageLte !== undefined) {
+    params['vote_average.lte'] = filters.voteAverageLte
+  }
+
+  if (filters.releaseDateGte) {
+    params['release_date.gte'] = filters.releaseDateGte
+  }
+
+  if (filters.releaseDateLte) {
+    params['release_date.lte'] = filters.releaseDateLte
+  }
+
+  const response = await tmdbClient.get('/discover/movie', { params })
+  return response.data
+}
+
 // ==================== 이미지 URL 생성 ====================
-/**
- * TMDB 이미지 경로를 전체 URL로 변환
- * @param path - 이미지 경로 (예: /abc123.jpg)
- * @param size - 이미지 크기 (w92, w154, w185, w342, w500, w780, original)
- * @returns 전체 이미지 URL
- */
-export const getImageUrl = (path: string | null, size: 'w92' | 'w154' | 'w185' | 'w342' | 'w500' | 'w780' | 'original' = 'w500'): string => {
+export const getImageUrl = (path: string | null, size: 'w200' | 'w300' | 'w500' | 'original' = 'w500'): string => {
   if (!path) {
-    return '/placeholder.jpg' // 기본 이미지
+    return '/placeholder.jpg' // placeholder 이미지
   }
   return `${IMAGE_BASE_URL}/${size}${path}`
 }
 
-/**
- * 포스터 이미지 URL
- */
 export const getPosterUrl = (path: string | null): string => {
   return getImageUrl(path, 'w500')
 }
 
-/**
- * 배경 이미지 URL
- */
 export const getBackdropUrl = (path: string | null): string => {
-  return getImageUrl(path, 'w780')
+  return getImageUrl(path, 'original')
 }
 
-/**
- * 썸네일 이미지 URL
- */
 export const getThumbnailUrl = (path: string | null): string => {
-  return getImageUrl(path, 'w185')
-}
-
-// ==================== 에러 핸들링 ====================
-export const handleTmdbError = (error: any): string => {
-  if (error.response) {
-    // 서버 응답이 있는 경우
-    const status = error.response.status
-
-    switch (status) {
-      case 401:
-        return '유효하지 않은 API 키입니다'
-      case 404:
-        return '요청한 데이터를 찾을 수 없습니다'
-      case 429:
-        return '요청 횟수를 초과했습니다. 잠시 후 다시 시도해주세요'
-      default:
-        return '영화 정보를 불러오는데 실패했습니다'
-    }
-  } else if (error.request) {
-    // 요청은 보냈지만 응답을 받지 못한 경우
-    return '서버에 연결할 수 없습니다. 네트워크를 확인해주세요'
-  } else {
-    // 요청 설정 중 에러
-    return '요청 중 오류가 발생했습니다'
-  }
-}
-
-// ==================== API 상태 확인 ====================
-export const checkApiConnection = async (): Promise<boolean> => {
-  try {
-    await fetchPopularMovies(1)
-    return true
-  } catch (error) {
-    console.error('TMDB API connection failed:', error)
-    return false
-  }
+  return getImageUrl(path, 'w200')
 }

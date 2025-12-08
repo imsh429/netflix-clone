@@ -1,95 +1,142 @@
 <!-- src/views/Home.vue -->
 <template>
   <div class="home-page">
+    <!-- Header -->
     <AppHeader />
 
+    <!-- Main Content -->
     <main class="main-content">
-      <!-- Hero Section (선택사항) -->
-      <section class="hero-section">
+      <!-- Hero Section (Featured Movie) -->
+      <section v-if="featuredMovie" class="hero-section">
+        <div
+          class="hero-background"
+          :style="{ backgroundImage: `url(${getBackdropUrl(featuredMovie.backdrop_path)})` }"
+        >
+          <div class="hero-overlay"></div>
+        </div>
+
         <div class="hero-content">
-          <h1 class="hero-title">
-            <i class="fas fa-film"></i>
-            Netflix Demo
-          </h1>
-          <p class="hero-subtitle">수천 편의 영화를 감상하세요</p>
+          <h1 class="hero-title">{{ featuredMovie.title }}</h1>
+          <p class="hero-overview">{{ truncateText(featuredMovie.overview, 200) }}</p>
+
+          <div class="hero-meta">
+            <span class="rating">
+              <i class="fas fa-star"></i>
+              {{ featuredMovie.vote_average.toFixed(1) }}
+            </span>
+            <span class="year">{{ getReleaseYear(featuredMovie.release_date) }}</span>
+          </div>
+
+          <div class="hero-actions">
+            <button
+              class="wishlist-btn-hero"
+              @click="handleToggleWishlist(featuredMovie.id)"
+            >
+              <i :class="isInWishlist(featuredMovie.id) ? 'fas fa-heart' : 'far fa-heart'"></i>
+              <span>{{ isInWishlist(featuredMovie.id) ? '찜 해제' : '내가 찜한 리스트' }}</span>
+            </button>
+          </div>
         </div>
       </section>
 
-      <div class="container">
-        <!-- 섹션 1: 인기 영화 (필수 API 1) -->
+      <!-- Movie Sections -->
+      <div class="movie-sections">
+        <!-- 1. 인기 영화 (API 1) -->
         <section class="movie-section">
-          <h2 class="section-title">
-            <i class="fas fa-fire"></i>
-            인기 영화
-          </h2>
+          <div class="section-header">
+            <h2>
+              <i class="fas fa-fire"></i>
+              지금 인기 있는 콘텐츠
+            </h2>
+            <router-link to="/popular" class="see-all">
+              모두 보기 <i class="fas fa-chevron-right"></i>
+            </router-link>
+          </div>
 
-          <!-- Conditional Rendering -->
-          <Loading v-if="popularLoading" />
-          <MovieGrid
-            v-else-if="popularMovies.length > 0"
-            :movies="popularMovies"
-            :wishlist-ids="wishlistIds"
-            @toggle-wishlist="handleToggleWishlist"
-          />
-          <div v-else class="empty-message">
-            영화를 불러올 수 없습니다.
+          <div v-if="isLoadingPopular" class="loading-section">
+            <Loading message="인기 영화를 불러오는 중..." />
+          </div>
+
+          <div v-else class="horizontal-scroll">
+            <MovieCard
+              v-for="movie in popularMovies.slice(0, 10)"
+              :key="movie.id"
+              :movie="movie"
+              :is-wishlisted="isInWishlist(movie.id)"
+              @toggle-wishlist="handleToggleWishlist"
+            />
           </div>
         </section>
 
-        <!-- 섹션 2: 현재 상영작 (필수 API 2) -->
+        <!-- 2. 현재 상영작 (API 2) -->
         <section class="movie-section">
-          <h2 class="section-title">
-            <i class="fas fa-play-circle"></i>
-            현재 상영작
-          </h2>
+          <div class="section-header">
+            <h2>
+              <i class="fas fa-film"></i>
+              현재 상영 중인 영화
+            </h2>
+          </div>
 
-          <Loading v-if="nowPlayingLoading" />
-          <MovieGrid
-            v-else-if="nowPlayingMovies.length > 0"
-            :movies="nowPlayingMovies"
-            :wishlist-ids="wishlistIds"
-            @toggle-wishlist="handleToggleWishlist"
-          />
-          <div v-else class="empty-message">
-            영화를 불러올 수 없습니다.
+          <div v-if="isLoadingNowPlaying" class="loading-section">
+            <Loading message="상영작을 불러오는 중..." />
+          </div>
+
+          <div v-else class="horizontal-scroll">
+            <MovieCard
+              v-for="movie in nowPlayingMovies.slice(0, 10)"
+              :key="movie.id"
+              :movie="movie"
+              :is-wishlisted="isInWishlist(movie.id)"
+              @toggle-wishlist="handleToggleWishlist"
+            />
           </div>
         </section>
 
-        <!-- 섹션 3: 최고 평점 (필수 API 3) -->
+        <!-- 3. 최고 평점 (API 3) -->
         <section class="movie-section">
-          <h2 class="section-title">
-            <i class="fas fa-star"></i>
-            최고 평점
-          </h2>
+          <div class="section-header">
+            <h2>
+              <i class="fas fa-star"></i>
+              최고 평점 영화
+            </h2>
+          </div>
 
-          <Loading v-if="topRatedLoading" />
-          <MovieGrid
-            v-else-if="topRatedMovies.length > 0"
-            :movies="topRatedMovies"
-            :wishlist-ids="wishlistIds"
-            @toggle-wishlist="handleToggleWishlist"
-          />
-          <div v-else class="empty-message">
-            영화를 불러올 수 없습니다.
+          <div v-if="isLoadingTopRated" class="loading-section">
+            <Loading message="최고 평점 영화를 불러오는 중..." />
+          </div>
+
+          <div v-else class="horizontal-scroll">
+            <MovieCard
+              v-for="movie in topRatedMovies.slice(0, 10)"
+              :key="movie.id"
+              :movie="movie"
+              :is-wishlisted="isInWishlist(movie.id)"
+              @toggle-wishlist="handleToggleWishlist"
+            />
           </div>
         </section>
 
-        <!-- 섹션 4: 개봉 예정 (필수 API 4) -->
+        <!-- 4. 개봉 예정 (API 4) -->
         <section class="movie-section">
-          <h2 class="section-title">
-            <i class="fas fa-calendar-plus"></i>
-            개봉 예정
-          </h2>
+          <div class="section-header">
+            <h2>
+              <i class="fas fa-calendar"></i>
+              개봉 예정 영화
+            </h2>
+          </div>
 
-          <Loading v-if="upcomingLoading" />
-          <MovieGrid
-            v-else-if="upcomingMovies.length > 0"
-            :movies="upcomingMovies"
-            :wishlist-ids="wishlistIds"
-            @toggle-wishlist="handleToggleWishlist"
-          />
-          <div v-else class="empty-message">
-            영화를 불러올 수 없습니다.
+          <div v-if="isLoadingUpcoming" class="loading-section">
+            <Loading message="개봉 예정 영화를 불러오는 중..." />
+          </div>
+
+          <div v-else class="horizontal-scroll">
+            <MovieCard
+              v-for="movie in upcomingMovies.slice(0, 10)"
+              :key="movie.id"
+              :movie="movie"
+              :is-wishlisted="isInWishlist(movie.id)"
+              @toggle-wishlist="handleToggleWishlist"
+            />
           </div>
         </section>
       </div>
@@ -98,104 +145,136 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useToast } from 'vue-toastification'
 import AppHeader from '@/components/common/AppHeader.vue'
+import MovieCard from '@/components/movie/MovieCard.vue'
 import Loading from '@/components/common/Loading.vue'
-import MovieGrid from '@/components/movie/MovieGrid.vue'
-import { useWishlist } from '@/composables/useWishlist'
-import {
-  fetchPopularMovies,
-  fetchNowPlayingMovies,
-  fetchTopRatedMovies,
-  fetchUpcomingMovies
-} from '@/services/tmdb'
-import type { Movie } from '@/types/movie'
+import { useMovieStore } from '@/stores/movie'
+import { useWishlistStore } from '@/stores/wishlist'
+import { getBackdropUrl } from '@/services/tmdb'
 
 const toast = useToast()
+const movieStore = useMovieStore()
+const wishlistStore = useWishlistStore()
 
-// Wishlist Composable 사용
-const { wishlist, wishlistIds, loadWishlist, toggleWishlist } = useWishlist()
+// State
+const isLoadingPopular = ref(false)
+const isLoadingNowPlaying = ref(false)
+const isLoadingTopRated = ref(false)
+const isLoadingUpcoming = ref(false)
 
-// State - 각 섹션별 상태 관리
-const popularMovies = ref<Movie[]>([])
-const popularLoading = ref(false)
+// Computed
+const popularMovies = computed(() => movieStore.popularMovies)
+const nowPlayingMovies = computed(() => movieStore.nowPlayingMovies)
+const topRatedMovies = computed(() => movieStore.topRatedMovies)
+const upcomingMovies = computed(() => movieStore.upcomingMovies)
 
-const nowPlayingMovies = ref<Movie[]>([])
-const nowPlayingLoading = ref(false)
+const featuredMovie = computed(() => {
+  // 인기 영화 중 첫 번째를 Featured로 사용
+  return popularMovies.value[0] || null
+})
 
-const topRatedMovies = ref<Movie[]>([])
-const topRatedLoading = ref(false)
-
-const upcomingMovies = ref<Movie[]>([])
-const upcomingLoading = ref(false)
-
-// 영화 데이터 로드
+// Methods
 const loadAllMovies = async () => {
   try {
-    // 1. 인기 영화
-    popularLoading.value = true
-    const popularData = await fetchPopularMovies()
-    popularMovies.value = popularData.results.slice(0, 10) // 상위 10개만
-    popularLoading.value = false
+    // 4개 API 동시 호출 (필수!)
+    const promises = [
+      loadPopularMovies(),
+      loadNowPlayingMovies(),
+      loadTopRatedMovies(),
+      loadUpcomingMovies()
+    ]
 
-    // 2. 현재 상영작
-    nowPlayingLoading.value = true
-    const nowPlayingData = await fetchNowPlayingMovies()
-    nowPlayingMovies.value = nowPlayingData.results.slice(0, 10)
-    nowPlayingLoading.value = false
-
-    // 3. 최고 평점
-    topRatedLoading.value = true
-    const topRatedData = await fetchTopRatedMovies()
-    topRatedMovies.value = topRatedData.results.slice(0, 10)
-    topRatedLoading.value = false
-
-    // 4. 개봉 예정
-    upcomingLoading.value = true
-    const upcomingData = await fetchUpcomingMovies()
-    upcomingMovies.value = upcomingData.results.slice(0, 10)
-    upcomingLoading.value = false
+    await Promise.all(promises)
   } catch (error) {
-    console.error('Failed to load movies:', error)
-    toast.error('영화를 불러오는데 실패했습니다')
-
-    popularLoading.value = false
-    nowPlayingLoading.value = false
-    topRatedLoading.value = false
-    upcomingLoading.value = false
+    console.error('Load movies error:', error)
+    toast.error('영화 목록을 불러오는데 실패했습니다')
   }
 }
 
-// 찜하기 토글
-const handleToggleWishlist = (movieId: number) => {
-  // 모든 영화 배열에서 해당 영화 찾기
-  const movie =
-    popularMovies.value.find(m => m.id === movieId) ||
-    nowPlayingMovies.value.find(m => m.id === movieId) ||
-    topRatedMovies.value.find(m => m.id === movieId) ||
-    upcomingMovies.value.find(m => m.id === movieId)
-
-  if (movie) {
-    toggleWishlist(movie)
-
-    // 토스트 알림
-    if (wishlistIds.value.includes(movieId)) {
-      toast.success('찜 목록에 추가되었습니다', {
-        timeout: 2000,
-        icon: '❤️'
-      })
-    } else {
-      toast.info('찜 목록에서 제거되었습니다', {
-        timeout: 2000
-      })
-    }
+const loadPopularMovies = async () => {
+  isLoadingPopular.value = true
+  try {
+    await movieStore.loadPopularMovies()
+  } catch (error) {
+    console.error('Load popular movies error:', error)
+  } finally {
+    isLoadingPopular.value = false
   }
+}
+
+const loadNowPlayingMovies = async () => {
+  isLoadingNowPlaying.value = true
+  try {
+    await movieStore.loadNowPlayingMovies()
+  } catch (error) {
+    console.error('Load now playing movies error:', error)
+  } finally {
+    isLoadingNowPlaying.value = false
+  }
+}
+
+const loadTopRatedMovies = async () => {
+  isLoadingTopRated.value = true
+  try {
+    await movieStore.loadTopRatedMovies()
+  } catch (error) {
+    console.error('Load top rated movies error:', error)
+  } finally {
+    isLoadingTopRated.value = false
+  }
+}
+
+const loadUpcomingMovies = async () => {
+  isLoadingUpcoming.value = true
+  try {
+    await movieStore.loadUpcomingMovies()
+  } catch (error) {
+    console.error('Load upcoming movies error:', error)
+  } finally {
+    isLoadingUpcoming.value = false
+  }
+}
+
+const handleToggleWishlist = (movieId: number) => {
+  const movie = [
+    ...popularMovies.value,
+    ...nowPlayingMovies.value,
+    ...topRatedMovies.value,
+    ...upcomingMovies.value
+  ].find(m => m.id === movieId)
+
+  if (!movie) return
+
+  wishlistStore.toggleWishlist(movie)
+
+  const isAdded = wishlistStore.isInWishlist(movieId)
+  if (isAdded) {
+    toast.success('찜한 리스트에 추가했습니다', { icon: '❤️' })
+  } else {
+    toast.info('찜한 리스트에서 제거했습니다')
+  }
+}
+
+const isInWishlist = (movieId: number): boolean => {
+  return wishlistStore.isInWishlist(movieId)
+}
+
+const truncateText = (text: string, maxLength: number): string => {
+  if (!text) return ''
+  if (text.length <= maxLength) return text
+  return text.slice(0, maxLength) + '...'
+}
+
+const getReleaseYear = (dateString: string): string => {
+  if (!dateString) return ''
+  return new Date(dateString).getFullYear().toString()
 }
 
 // Lifecycle
 onMounted(() => {
-  loadWishlist()
+  wishlistStore.loadWishlist()
   loadAllMovies()
 })
 </script>
@@ -204,46 +283,111 @@ onMounted(() => {
 .home-page {
   min-height: 100vh;
   background: var(--primary-black);
-  padding-top: 80px; /* Header 높이만큼 */
+  padding-top: 70px; /* Header 높이 */
 }
 
 /* ==================== Hero Section ==================== */
 .hero-section {
-  background: linear-gradient(
-    135deg,
-    rgba(229, 9, 20, 0.2) 0%,
-    rgba(0, 0, 0, 0.8) 100%
-  );
-  padding: 4rem 2rem;
-  margin-bottom: 3rem;
-  text-align: center;
+  position: relative;
+  height: 70vh;
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.4);
+}
+
+.hero-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to top, var(--primary-black), transparent);
 }
 
 .hero-content {
-  max-width: 800px;
+  position: relative;
+  z-index: 2;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 2rem;
+  width: 100%;
 }
 
 .hero-title {
-  font-size: 3rem;
+  font-size: 3.5rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin: 0 0 1rem 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.hero-overview {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  max-width: 600px;
+  margin-bottom: 1.5rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.hero-meta {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 1.5rem;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.hero-meta .rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hero-meta .rating i {
+  color: #ffd700;
+}
+
+.hero-actions {
+  display: flex;
   gap: 1rem;
-  color: var(--text-white);
 }
 
-.hero-title i {
-  color: var(--primary-red);
-  font-size: 3.5rem;
+.wishlist-btn-hero {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid white;
+  color: white;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
-.hero-subtitle {
-  font-size: 1.5rem;
-  color: var(--text-gray);
-  margin: 0;
+.wishlist-btn-hero:hover {
+  background: white;
+  color: var(--primary-black);
+  transform: scale(1.05);
+}
+
+.wishlist-btn-hero i {
+  font-size: 1.3rem;
 }
 
 /* ==================== Main Content ==================== */
@@ -251,39 +395,93 @@ onMounted(() => {
   width: 100%;
 }
 
-.container {
+.movie-sections {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 2rem;
 }
 
-/* ==================== Movie Sections ==================== */
+/* ==================== Movie Section ==================== */
 .movie-section {
-  margin-bottom: 4rem;
+  margin-bottom: 3rem;
 }
 
-.section-title {
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
   font-size: 1.8rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: var(--text-white);
-  padding-left: 0.5rem;
-  border-left: 4px solid var(--primary-red);
+  margin: 0;
 }
 
-.section-title i {
+.section-header h2 i {
   color: var(--primary-red);
-  font-size: 1.6rem;
 }
 
-.empty-message {
-  text-align: center;
-  padding: 3rem;
-  color: var(--text-gray);
-  font-size: 1.1rem;
+.see-all {
+  color: var(--text-white);
+  text-decoration: none;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.see-all:hover {
+  color: var(--primary-red);
+}
+
+/* ==================== Horizontal Scroll ==================== */
+.horizontal-scroll {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 1rem;
+  scroll-behavior: smooth;
+
+  /* 스크롤바 스타일 */
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-red) var(--hover-gray);
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-track {
+  background: var(--hover-gray);
+  border-radius: 4px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-thumb {
+  background: var(--primary-red);
+  border-radius: 4px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-thumb:hover {
+  background: #f40612;
+}
+
+.horizontal-scroll > * {
+  flex: 0 0 200px;
+  width: 200px;
+}
+
+.loading-section {
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ==================== Responsive ==================== */
@@ -293,39 +491,43 @@ onMounted(() => {
   }
 
   .hero-section {
-    padding: 2rem 1rem;
-    margin-bottom: 2rem;
+    height: 50vh;
+    min-height: 400px;
   }
 
   .hero-title {
     font-size: 2rem;
-    flex-direction: column;
-    gap: 0.5rem;
   }
 
-  .hero-title i {
-    font-size: 2.5rem;
+  .hero-overview {
+    font-size: 1rem;
+    max-width: 100%;
   }
 
-  .hero-subtitle {
-    font-size: 1.1rem;
+  .hero-meta {
+    font-size: 0.95rem;
   }
 
-  .container {
-    padding: 0 1rem;
+  .wishlist-btn-hero {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
   }
 
-  .movie-section {
-    margin-bottom: 3rem;
+  .movie-sections {
+    padding: 1rem;
   }
 
-  .section-title {
-    font-size: 1.4rem;
-    margin-bottom: 1rem;
-  }
-
-  .section-title i {
+  .section-header h2 {
     font-size: 1.3rem;
+  }
+
+  .see-all {
+    font-size: 0.9rem;
+  }
+
+  .horizontal-scroll > * {
+    flex: 0 0 150px;
+    width: 150px;
   }
 }
 
@@ -334,14 +536,23 @@ onMounted(() => {
     font-size: 1.5rem;
   }
 
-  .hero-subtitle {
-    font-size: 1rem;
+  .hero-overview {
+    font-size: 0.9rem;
   }
 
-  .section-title {
-    font-size: 1.2rem;
-    padding-left: 0.25rem;
-    border-left-width: 3px;
+  .wishlist-btn-hero span {
+    display: none;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .horizontal-scroll > * {
+    flex: 0 0 130px;
+    width: 130px;
   }
 }
 </style>

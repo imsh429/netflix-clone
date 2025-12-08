@@ -1,3 +1,5 @@
+// src/utils/validators.ts
+
 /**
  * 이메일 형식 검증
  */
