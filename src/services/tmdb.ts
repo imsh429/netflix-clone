@@ -157,7 +157,7 @@ export const discoverMovies = async (filters: DiscoverFilters): Promise<MovieRes
 // ==================== 이미지 URL 생성 ====================
 export const getImageUrl = (path: string | null, size: 'w200' | 'w300' | 'w500' | 'original' = 'w500'): string => {
   if (!path) {
-    return '/placeholder.jpg' // placeholder 이미지
+    return 'https://via.placeholder.com/500x750/1a1a1a/666666?text=No+Image' // placeholder 이미지
   }
   return `${IMAGE_BASE_URL}/${size}${path}`
 }
