@@ -49,6 +49,7 @@
           v-else
           ref="scrollContainer"
           class="infinite-scroll-view"
+          @scroll="handleScroll"
         >
           <!-- Movie Grid -->
           <MovieGrid
@@ -170,29 +171,22 @@ const handleChangeView = (view: 'table' | 'infinite') => {
     // 무한 스크롤 모드로 전환 시 첫 페이지부터 다시 로드
     currentPage.value = 1
     loadMovies(1)
-
-    // 스크롤 이벤트 리스너 추가
-    if (scrollContainer.value) {
-      scrollContainer.value.addEventListener('scroll', handleScroll)
-    }
+    // ✅ useInfiniteScroll의 watch가 자동으로 이벤트 리스너 추가
   } else {
     // Table 모드로 전환 시 첫 페이지 로드
     currentPage.value = 1
     loadMovies(1)
-
-    // 스크롤 이벤트 리스너 제거
-    if (scrollContainer.value) {
-      scrollContainer.value.removeEventListener('scroll', handleScroll)
-    }
+    // ✅ useInfiniteScroll의 watch가 자동으로 이벤트 리스너 제거
   }
 
   toast.success(`${view === 'table' ? 'Table View' : '무한 스크롤'} 모드로 전환되었습니다`)
 }
 
-const handleScroll = () => {
-  if (!scrollContainer.value) return
+const handleScroll = (event: Event) => {
+  const target = event.target as HTMLElement
+  if (!target) return
 
-  const scrollTop = scrollContainer.value.scrollTop
+  const scrollTop = target.scrollTop
   showScrollTopBtn.value = scrollTop > 500
 }
 

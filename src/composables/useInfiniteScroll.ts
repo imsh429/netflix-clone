@@ -1,5 +1,5 @@
 // src/composables/useInfiniteScroll.ts
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 
 /**
  * 무한 스크롤을 위한 Custom Composable
@@ -61,13 +61,20 @@ export function useInfiniteScroll(
     return scrollContainer.value?.scrollTop || 0
   }
 
-  // Lifecycle Hooks
-  onMounted(() => {
-    if (scrollContainer.value) {
-      scrollContainer.value.addEventListener('scroll', handleScroll)
+  // ✅ 수정: watch를 사용해서 scrollContainer가 할당될 때 자동으로 이벤트 리스너 연결
+  watch(scrollContainer, (newContainer, oldContainer) => {
+    // 이전 컨테이너에서 이벤트 리스너 제거
+    if (oldContainer) {
+      oldContainer.removeEventListener('scroll', handleScroll)
+    }
+
+    // 새 컨테이너에 이벤트 리스너 추가
+    if (newContainer) {
+      newContainer.addEventListener('scroll', handleScroll)
     }
   })
 
+  // Cleanup
   onUnmounted(() => {
     if (scrollContainer.value) {
       scrollContainer.value.removeEventListener('scroll', handleScroll)
