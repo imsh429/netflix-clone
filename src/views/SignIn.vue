@@ -259,7 +259,7 @@ const validateSignupEmail = () => {
   return result.valid
 }
 
-const validatePasswordConfirm = () => {
+const validatePasswordConfirmField = () => {
   const result = validatePasswordConfirm(
     signupForm.value.password,
     signupForm.value.passwordConfirm
@@ -328,7 +328,7 @@ const handleSignup = async () => {
   }
 
   // 비밀번호 확인 검증
-  if (!validatePasswordConfirm()) {
+  if (!validatePasswordConfirmField()) {
     return
   }
 
