@@ -29,16 +29,28 @@ export const findUser = (email: string, password: string): User | undefined => {
 // ==================== 2. 로그인 상태 ====================
 
 export const saveLoginStatus = (keepLogin: boolean, userId?: string): void => {
-  localStorage.setItem('isLoggedIn', keepLogin.toString())
-  if (userId) {
-    localStorage.setItem('currentUser', userId)
+  if (keepLogin) {
+    // 체크함: localStorage (영구 저장)
+    localStorage.setItem('isLoggedIn', 'true')
+    if (userId) localStorage.setItem('currentUser', userId)
+  } else {
+    // 체크 안 함: sessionStorage (브라우저 닫으면 삭제)
+    sessionStorage.setItem('isLoggedIn', 'true')
+    if (userId) sessionStorage.setItem('currentUser', userId)
   }
 }
 
+// ✅ 수정 - localStorage와 sessionStorage 모두 확인
 export const getLoginStatus = (): LoginStatus => {
+  const isLoggedInLocal = localStorage.getItem('isLoggedIn') === 'true'
+  const isLoggedInSession = sessionStorage.getItem('isLoggedIn') === 'true'
+
+  const userIdLocal = localStorage.getItem('currentUser')
+  const userIdSession = sessionStorage.getItem('currentUser')
+
   return {
-    isLoggedIn: localStorage.getItem('isLoggedIn') === 'true',
-    userId: localStorage.getItem('currentUser')
+    isLoggedIn: isLoggedInLocal || isLoggedInSession,
+    userId: userIdLocal || userIdSession
   }
 }
 
@@ -46,6 +58,9 @@ export const clearLoginStatus = (): void => {
   localStorage.removeItem('isLoggedIn')
   localStorage.removeItem('currentUser')
   localStorage.removeItem('TMDb-Key')
+
+  sessionStorage.removeItem('isLoggedIn')
+  sessionStorage.removeItem('currentUser')
 }
 
 // ==================== 3. 찜한 영화 ====================
