@@ -129,10 +129,10 @@
         <div v-if="hasSearched" class="results-info">
           <p v-if="searchQuery">
             "<strong>{{ searchQuery }}</strong>" 검색 결과:
-            <strong>{{ movies.length }}개</strong>
+            <strong>{{ totalResults }}개</strong>
           </p>
           <p v-else-if="selectedGenre">
-            장르 필터 결과: <strong>{{ movies.length }}개</strong>
+            장르 필터 결과: <strong>{{ totalResults }}개</strong>
           </p>
         </div>
 
@@ -199,6 +199,7 @@ const showFilters = ref(false)
 const recentSearches = ref<string[]>([])
 const currentPage = ref(1)
 const totalPages = ref(1)
+const totalResults = ref(0)
 
 // Filters
 const selectedGenre = ref<number | ''>('')
@@ -220,13 +221,9 @@ const handleSearch = async () => {
 
   try {
     const data = await searchMovies(query, currentPage.value)
-    // ✅ 이 4줄 추가!
-    console.log('🔍 API Response:', data)
-    console.log('📊 results.length:', data.results.length)
-    console.log('📊 total_results:', data.total_results)
-    console.log('📊 total_pages:', data.total_pages)
     movies.value = data.results
     totalPages.value = data.total_pages
+    totalResults.value = data.total_results
 
     // 검색어 저장
     saveSearchHistory(query)
@@ -263,6 +260,7 @@ const applyFilters = async () => {
     const data = await discoverMovies(filters)
     movies.value = data.results
     totalPages.value = data.total_pages
+    totalResults.value = data.total_results
 
     toast.success(`${data.total_results}개의 영화를 찾았습니다`)
   } catch (error) {
@@ -282,6 +280,7 @@ const resetFilters = () => {
   hasSearched.value = false
   currentPage.value = 1
   totalPages.value = 1
+  totalResults.value = 0
   toast.info('필터가 초기화되었습니다')
 }
 
@@ -291,6 +290,7 @@ const clearSearch = () => {
   hasSearched.value = false
   currentPage.value = 1
   totalPages.value = 1
+  totalResults.value = 0
 }
 
 const applyRecentSearch = (keyword: string) => {
@@ -318,6 +318,7 @@ const handleChangePage = async (page: number) => {
       const data = await searchMovies(searchQuery.value, page)
       movies.value = data.results
       totalPages.value = data.total_pages
+      totalResults.value = data.total_results
     } catch (error) {
       console.error('Page change error:', error)
       toast.error('페이지를 불러오는데 실패했습니다')
