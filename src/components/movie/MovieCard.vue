@@ -20,6 +20,12 @@
         @error="handleImageError"
       />
 
+      <!-- 이미지 없을 때 표시 -->
+      <div v-if="imageError" class="no-image-placeholder">
+        <i class="fas fa-film"></i>
+        <span>No Image</span>
+      </div>
+
       <!-- 찜 버튼 -->
       <button
         class="wishlist-btn"
@@ -78,6 +84,7 @@ const emit = defineEmits<{
 
 // State
 const imageLoaded = ref(false)
+const imageError = ref(false)
 
 // Computed
 const posterUrl = computed(() => {
@@ -114,12 +121,12 @@ const releaseYear = computed(() => {
 // Methods
 const handleImageLoad = () => {
   imageLoaded.value = true
+  imageError.value = false
 }
 
 const handleImageError = (e: Event) => {
-  const target = e.target as HTMLImageElement
-  target.src = '/placeholder.jpg'
   imageLoaded.value = true
+  imageError.value = true
 }
 
 const handleToggle = () => {
@@ -196,6 +203,44 @@ const handleToggle = () => {
   100% {
     background-position: 200% 0;
   }
+}
+
+/* ==================== No Image Placeholder ==================== */
+.poster-container.no-image {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+}
+
+.no-image-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: var(--text-gray);
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+}
+
+.no-image-placeholder i {
+  font-size: 3rem;
+  opacity: 0.5;
+  color: var(--text-gray);
+}
+
+.no-image-placeholder span {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* 호버 시에도 작동하도록 */
+.poster-container.no-image .hover-overlay {
+  background: rgba(0, 0, 0, 0.8);
 }
 
 /* ==================== Poster ==================== */

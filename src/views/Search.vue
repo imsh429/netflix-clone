@@ -129,10 +129,10 @@
         <div v-if="hasSearched" class="results-info">
           <p v-if="searchQuery">
             "<strong>{{ searchQuery }}</strong>" 검색 결과:
-            <strong>{{ movies.length }}개</strong>
+            <strong>{{ totalResults }}개</strong>
           </p>
           <p v-else-if="selectedGenre">
-            장르 필터 결과: <strong>{{ movies.length }}개</strong>
+            장르 필터 결과: <strong>{{ totalResults }}개</strong>
           </p>
         </div>
 
@@ -145,6 +145,14 @@
           :movies="movies"
           :wishlist-ids="wishlistIds"
           @toggle-wishlist="handleToggleWishlist"
+        />
+
+        <!-- Pagination -->
+        <Pagination
+          v-if="!isLoading && movies.length > 0 && totalPages > 1"
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          @change-page="handleChangePage"
         />
 
         <!-- Empty State -->
@@ -171,10 +179,11 @@ import { useToast } from 'vue-toastification'
 import AppHeader from '@/components/common/AppHeader.vue'
 import MovieGrid from '@/components/movie/MovieGrid.vue'
 import Loading from '@/components/common/Loading.vue'
+import Pagination from '@/components/movie/Pagination.vue'
 import { useWishlistStore } from '@/stores/wishlist'
 import { useMovieStore } from '@/stores/movie'
 import { searchMovies, discoverMovies } from '@/services/tmdb'
-import { saveSearchHistory, getSearchHistory, clearSearchHistory } from '@/utils/localStorage'
+import { saveSearchHistory, getSearchHistory, clearSearchHistory, getLoginStatus } from '@/utils/localStorage'
 import type { Movie } from '@/types/movie'
 
 const toast = useToast()
@@ -188,6 +197,9 @@ const isLoading = ref(false)
 const hasSearched = ref(false)
 const showFilters = ref(false)
 const recentSearches = ref<string[]>([])
+const currentPage = ref(1)
+const totalPages = ref(1)
+const totalResults = ref(0)
 
 // Filters
 const selectedGenre = ref<number | ''>('')
@@ -205,16 +217,22 @@ const handleSearch = async () => {
 
   isLoading.value = true
   hasSearched.value = true
+  currentPage.value = 1
 
   try {
-    const data = await searchMovies(query)
+    const data = await searchMovies(query, currentPage.value)
     movies.value = data.results
+    totalPages.value = data.total_pages
+    totalResults.value = data.total_results
 
     // 검색어 저장
-    saveSearchHistory(query)
+    const { userId } = getLoginStatus()
+    if (userId) {
+      saveSearchHistory(query, userId)
+    }
     loadRecentSearches()
 
-    toast.success(`${data.results.length}개의 영화를 찾았습니다`)
+    toast.success(`${data.total_results}개의 영화를 찾았습니다`)
   } catch (error) {
     console.error('Search error:', error)
     toast.error('검색 중 오류가 발생했습니다')
@@ -226,10 +244,12 @@ const handleSearch = async () => {
 const applyFilters = async () => {
   isLoading.value = true
   hasSearched.value = true
+  currentPage.value = 1
 
   try {
     const filters: any = {
-      sortBy: sortBy.value
+      sortBy: sortBy.value,
+      page: currentPage.value
     }
 
     if (selectedGenre.value) {
@@ -242,8 +262,10 @@ const applyFilters = async () => {
 
     const data = await discoverMovies(filters)
     movies.value = data.results
+    totalPages.value = data.total_pages
+    totalResults.value = data.total_results
 
-    toast.success(`${data.results.length}개의 영화를 찾았습니다`)
+    toast.success(`${data.total_results}개의 영화를 찾았습니다`)
   } catch (error) {
     console.error('Filter error:', error)
     toast.error('필터링 중 오류가 발생했습니다')
@@ -259,6 +281,9 @@ const resetFilters = () => {
   searchQuery.value = ''
   movies.value = []
   hasSearched.value = false
+  currentPage.value = 1
+  totalPages.value = 1
+  totalResults.value = 0
   toast.info('필터가 초기화되었습니다')
 }
 
@@ -266,6 +291,9 @@ const clearSearch = () => {
   searchQuery.value = ''
   movies.value = []
   hasSearched.value = false
+  currentPage.value = 1
+  totalPages.value = 1
+  totalResults.value = 0
 }
 
 const applyRecentSearch = (keyword: string) => {
@@ -274,13 +302,47 @@ const applyRecentSearch = (keyword: string) => {
 }
 
 const loadRecentSearches = () => {
-  recentSearches.value = getSearchHistory()
+  const { userId } = getLoginStatus()
+  if (userId) {
+    recentSearches.value = getSearchHistory(userId)
+  } else {
+    recentSearches.value = []
+  }
 }
 
 const clearAllSearches = () => {
-  clearSearchHistory()
+  const { userId } = getLoginStatus()
+  if (userId) {
+    clearSearchHistory(userId)
+  }
   recentSearches.value = []
   toast.info('검색 기록이 삭제되었습니다')
+}
+
+const handleChangePage = async (page: number) => {
+  currentPage.value = page
+
+  // 검색어가 있으면 검색, 아니면 필터 재적용
+  if (searchQuery.value.trim()) {
+    isLoading.value = true
+    try {
+      const data = await searchMovies(searchQuery.value, page)
+      movies.value = data.results
+      totalPages.value = data.total_pages
+      totalResults.value = data.total_results
+    } catch (error) {
+      console.error('Page change error:', error)
+      toast.error('페이지를 불러오는데 실패했습니다')
+    } finally {
+      isLoading.value = false
+    }
+  } else {
+    // 필터만 적용된 경우
+    await applyFilters()
+  }
+
+  // 페이지 변경 시 스크롤을 맨 위로
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 const handleToggleWishlist = (movieId: number) => {
