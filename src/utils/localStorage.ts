@@ -1,3 +1,4 @@
+// src/utils/localStorage.ts
 import type { User, Movie, LoginStatus } from '@/types/movie'
 
 // ==================== 1. 사용자 정보 ====================
