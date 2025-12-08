@@ -183,7 +183,7 @@ import Pagination from '@/components/movie/Pagination.vue'
 import { useWishlistStore } from '@/stores/wishlist'
 import { useMovieStore } from '@/stores/movie'
 import { searchMovies, discoverMovies } from '@/services/tmdb'
-import { saveSearchHistory, getSearchHistory, clearSearchHistory } from '@/utils/localStorage'
+import { saveSearchHistory, getSearchHistory, clearSearchHistory, getLoginStatus } from '@/utils/localStorage'
 import type { Movie } from '@/types/movie'
 
 const toast = useToast()
@@ -226,7 +226,10 @@ const handleSearch = async () => {
     totalResults.value = data.total_results
 
     // 검색어 저장
-    saveSearchHistory(query)
+    const { userId } = getLoginStatus()
+    if (userId) {
+      saveSearchHistory(query, userId)
+    }
     loadRecentSearches()
 
     toast.success(`${data.total_results}개의 영화를 찾았습니다`)
@@ -299,11 +302,19 @@ const applyRecentSearch = (keyword: string) => {
 }
 
 const loadRecentSearches = () => {
-  recentSearches.value = getSearchHistory()
+  const { userId } = getLoginStatus()
+  if (userId) {
+    recentSearches.value = getSearchHistory(userId)
+  } else {
+    recentSearches.value = []
+  }
 }
 
 const clearAllSearches = () => {
-  clearSearchHistory()
+  const { userId } = getLoginStatus()
+  if (userId) {
+    clearSearchHistory(userId)
+  }
   recentSearches.value = []
   toast.info('검색 기록이 삭제되었습니다')
 }

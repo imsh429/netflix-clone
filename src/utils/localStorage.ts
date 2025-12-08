@@ -64,53 +64,67 @@ export const clearLoginStatus = (): void => {
 }
 
 // ==================== 3. 찜한 영화 ====================
-
-export const saveWishlist = (movies: Movie[]): void => {
-  localStorage.setItem('movieWishlist', JSON.stringify(movies))
+const getWishlistKey = (userId: string): string => {
+  return `movieWishlist_${userId}`
 }
 
-export const getWishlist = (): Movie[] => {
-  const data = localStorage.getItem('movieWishlist')
+export const saveWishlist = (movies: Movie[], userId: string): void => {
+  const key = getWishlistKey(userId)
+  localStorage.setItem(key, JSON.stringify(movies))
+}
+
+export const getWishlist = (userId: string): Movie[] => {
+  const key = getWishlistKey(userId)
+  const data = localStorage.getItem(key)
   return data ? JSON.parse(data) : []
 }
 
-export const addToWishlist = (movie: Movie): void => {
-  const wishlist = getWishlist()
+export const addToWishlist = (movie: Movie, userId: string): void => {
+  const wishlist = getWishlist(userId)
   if (!wishlist.some(m => m.id === movie.id)) {
     wishlist.push(movie)
-    saveWishlist(wishlist)
+    saveWishlist(wishlist, userId)
   }
 }
 
-export const removeFromWishlist = (movieId: number): void => {
-  const wishlist = getWishlist()
+export const removeFromWishlist = (movieId: number, userId: string): void => {
+  const wishlist = getWishlist(userId)
   const filtered = wishlist.filter(m => m.id !== movieId)
-  saveWishlist(filtered)
+  saveWishlist(filtered, userId)
+}
+
+export const clearWishlist = (userId: string): void => {
+  const key = getWishlistKey(userId)
+  localStorage.removeItem(key)
 }
 
 // ==================== 4. 최근 검색어 (추가 점수) ====================
-
-export const saveSearchHistory = (query: string): void => {
-  if (!query.trim()) return
-
-  const history = getSearchHistory()
-  // 중복 제거
-  const filtered = history.filter(q => q !== query)
-  // 최신 검색어를 맨 앞에 추가
-  filtered.unshift(query)
-  // 최대 10개까지만 저장
-  const limited = filtered.slice(0, 10)
-
-  localStorage.setItem('searchHistory', JSON.stringify(limited))
+const getSearchHistoryKey = (userId: string): string => {
+  return `searchHistory_${userId}`
 }
 
-export const getSearchHistory = (): string[] => {
-  const data = localStorage.getItem('searchHistory')
+export const saveSearchHistory = (query: string, userId: string): void => {
+  if (!query.trim()) return
+
+  const history = getSearchHistory(userId)
+  const filtered = history.filter(q => q !== query)
+  filtered.unshift(query)
+  const limited = filtered.slice(0, 10)
+
+  const key = getSearchHistoryKey(userId)
+  localStorage.setItem(key, JSON.stringify(limited))
+}
+
+export const getSearchHistory = (userId: string): string[] => {
+  const key = getSearchHistoryKey(userId)
+  const data = localStorage.getItem(key)
   return data ? JSON.parse(data) : []
 }
 
-export const clearSearchHistory = (): void => {
-  localStorage.removeItem('searchHistory')
+
+export const clearSearchHistory = (userId: string): void => {
+  const key = getSearchHistoryKey(userId)
+  localStorage.removeItem(key)
 }
 
 // ==================== 5. TMDB API 키 저장 ====================
