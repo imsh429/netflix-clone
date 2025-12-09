@@ -2,8 +2,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import type { Movie } from '@/types/movie'
-import { saveWishlist, getWishlist } from '@/utils/localStorage'
-import { getLoginStatus } from '@/utils/localStorage'  // ✅ 추가
+import { saveWishlist, getWishlist, getLoginStatus } from '@/utils/localStorage'
 
 export const useWishlistStore = defineStore('wishlist', () => {
   // State
