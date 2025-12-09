@@ -149,7 +149,7 @@
                 type="password"
                 placeholder="비밀번호를 다시 입력하세요"
                 required
-                @blur="validatePasswordConfirm"
+                @blur="validatePasswordConfirmField"
               />
               <span v-if="signupErrors.passwordConfirm" class="error-message">
                 {{ signupErrors.passwordConfirm }}
