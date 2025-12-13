@@ -165,6 +165,10 @@ onUnmounted(() => {
   user-select: none;
 }
 
+.logo span {
+  white-space: nowrap;
+}
+
 .logo:hover {
   transform: scale(1.05);
 }
@@ -192,6 +196,10 @@ onUnmounted(() => {
   transition: color 0.3s ease;
   position: relative;
   padding: 0.5rem 0;
+}
+
+.nav-link span {
+  white-space: nowrap;
 }
 
 .nav-link::after {
@@ -320,6 +328,41 @@ onUnmounted(() => {
 }
 
 /* ==================== Responsive ==================== */
+/* 중간 크기 (769px ~ 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .logo {
+    font-size: 1.3rem;  /* 폰트 크기 축소 */
+  }
+
+  .logo span {
+    white-space: nowrap;  /* 줄바꿈 방지 */
+  }
+
+  .nav-link span {
+    display: none;
+  }
+
+  .nav-link {
+    gap: 0;
+  }
+
+  .nav-menu {
+    gap: 1.5rem;
+  }
+
+  .user-section {
+    gap: 0.5rem;
+  }
+
+  .logout-btn span {
+    display: none;
+  }
+
+  .logout-btn {
+    padding: 0.5rem;
+  }
+}
+
 @media (max-width: 768px) {
   .header-content {
     padding: 1rem;
