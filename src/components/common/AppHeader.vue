@@ -133,6 +133,7 @@ onUnmounted(() => {
   background: transparent;
   transition: all 0.3s ease;
   padding: 0;
+  height: 70px;
 }
 
 /* 스크롤 시 애니메이션 (필수!) */
@@ -150,6 +151,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
+  height: 100%;
 }
 
 /* ==================== Logo ==================== */
@@ -163,6 +165,10 @@ onUnmounted(() => {
   cursor: pointer;
   transition: transform 0.3s ease;
   user-select: none;
+}
+
+.logo span {
+  white-space: nowrap;
 }
 
 .logo:hover {
@@ -192,6 +198,10 @@ onUnmounted(() => {
   transition: color 0.3s ease;
   position: relative;
   padding: 0.5rem 0;
+}
+
+.nav-link span {
+  white-space: nowrap;
 }
 
 .nav-link::after {
@@ -266,6 +276,10 @@ onUnmounted(() => {
   transform: translateY(-2px);
 }
 
+.logout-btn span {
+  white-space: nowrap;
+}
+
 /* ==================== Mobile Menu ==================== */
 .mobile-menu-toggle {
   display: none;
@@ -320,6 +334,42 @@ onUnmounted(() => {
 }
 
 /* ==================== Responsive ==================== */
+/* 중간 크기 (769px ~ 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .logo {
+    font-size: 1.2rem;  /* 폰트 크기 축소 */
+  }
+
+  .logo span {
+    white-space: nowrap;  /* 줄바꿈 방지 */
+  }
+
+  .nav-link span {
+    display: none;
+  }
+
+  .nav-link {
+    gap: 0;
+  }
+
+  .nav-menu {
+    gap: 1.5rem;
+  }
+
+  .user-section {
+    gap: 0.5rem;
+  }
+
+  .logout-btn span {
+    display: none;
+  }
+
+  .logout-btn {
+    padding: 0.5rem;
+  }
+
+}
+
 @media (max-width: 768px) {
   .header-content {
     padding: 1rem;

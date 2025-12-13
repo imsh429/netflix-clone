@@ -40,28 +40,30 @@ const switchView = (view: 'table' | 'infinite') => {
 <style scoped>
 .view-toggle {
   display: flex;
-  gap: 1rem;
-  padding: 1rem;
+  flex-direction: row;
+  gap: 0.5rem;
+  padding: 0.5rem;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
-  margin-bottom: 2rem;
+  align-self: flex-start;
 }
 
 .toggle-btn {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   background: transparent;
   border: 2px solid #333;
   color: var(--text-white);
   border-radius: 6px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
+  white-space: nowrap;
+  min-width: 120px;
 }
 
 .toggle-btn:hover {
@@ -76,25 +78,30 @@ const switchView = (view: 'table' | 'infinite') => {
 }
 
 .toggle-btn i {
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 /* ==================== Responsive ==================== */
 @media (max-width: 768px) {
   .view-toggle {
-    flex-direction: column;
-    gap: 0.5rem;
+    width: auto;
   }
 
   .toggle-btn {
-    padding: 0.75rem 1rem;
-    font-size: 0.95rem;
+    flex: 1;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.75rem;
+    min-width: auto;
   }
 }
 
 @media (max-width: 480px) {
   .toggle-btn span {
-    font-size: 0.85rem;
+    display: none;
+  }
+
+  .toggle-btn i {
+    font-size: 0.9rem;
   }
 }
 </style>

@@ -2,9 +2,9 @@
 import axios from 'axios'
 import type { MovieResponse, GenresResponse, Movie } from '@/types/movie'
 
-// 환경변수 또는 Local Storage에서 API 키 가져오기
+// Local Storage에서 API 키 가져오기
 const getApiKey = (): string => {
-  return import.meta.env.VITE_TMDB_API_KEY || localStorage.getItem('TMDb-Key') || ''
+  return localStorage.getItem('TMDb-Key') || ''
 }
 
 const BASE_URL = import.meta.env.VITE_TMDB_BASE_URL || 'https://api.themoviedb.org/3'
