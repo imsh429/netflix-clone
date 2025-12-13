@@ -4,8 +4,10 @@
     class="movie-card"
     :class="{
       'wishlisted': isWishlisted,
-      'loading': !imageLoaded
+      'loading': !imageLoaded,
+      'overlay-active' : showOverlay
     }"
+    @click="handleCardClick"
   >
     <!-- Loading Skeleton -->
     <div v-if="!imageLoaded" class="skeleton-loader"></div>
@@ -85,6 +87,7 @@ const emit = defineEmits<{
 // State
 const imageLoaded = ref(false)
 const imageError = ref(false)
+const showOverlay = ref(false)
 
 // Computed
 const posterUrl = computed(() => {
@@ -127,6 +130,13 @@ const handleImageLoad = () => {
 const handleImageError = (e: Event) => {
   imageLoaded.value = true
   imageError.value = true
+}
+
+const handleCardClick = () => {
+  // hover가 불가능한 기기(터치 기기)에서만 동작
+  if (!window.matchMedia('(hover: hover)').matches) {
+    showOverlay.value = !showOverlay.value
+  }
 }
 
 const handleToggle = () => {
@@ -247,13 +257,13 @@ const handleToggle = () => {
 .poster-container {
   position: relative;
   width: 100%;
-  padding-bottom: 150%; /* 2:3 비율 */
+  aspect-ratio: 2 / 3; /* 2:3 비율 */
   overflow: hidden;
   background: var(--hover-gray);
 }
 
 .poster-image {
-  position: absolute;
+  //position: absolute;
   top: 0;
   left: 0;
   width: 100%;
@@ -412,15 +422,35 @@ const handleToggle = () => {
   }
 }
 
-@media (max-width: 768px) {
+@media (hover: none) {
+  /* 기본적으로 overlay 숨김 */
+  .hover-overlay {
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+  }
+
+  /* 클릭 시 overlay 표시 */
+  .movie-card.overlay-active .hover-overlay {
+    transform: translateY(0);
+  }
+
+  /* 클릭 가능 표시 */
+  .movie-card {
+    cursor: pointer;
+  }
+
+  /* hover 효과는 약간만 */
   .movie-card:hover {
     transform: scale(1.02);
   }
 
-  .hover-overlay {
-    display: none;
+  .movie-card:hover .poster-image {
+    transform: scale(1.05);
   }
+}
 
+/* 작은 화면 공통 (버튼 크기) */
+@media (max-width: 768px) {
   .wishlist-btn {
     width: 35px;
     height: 35px;

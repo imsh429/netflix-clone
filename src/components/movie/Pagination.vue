@@ -158,7 +158,8 @@ const goToNextPage = () => {
   justify-content: center;
   gap: 0.5rem;
   padding: 2rem 1rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  width: 100%;
 }
 
 .pagination-btn,
@@ -207,6 +208,7 @@ const goToNextPage = () => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-wrap: nowrap;
 }
 
 .ellipsis {
@@ -235,9 +237,9 @@ const goToNextPage = () => {
 
   .pagination-btn,
   .page-btn {
-    min-width: 40px;
-    height: 40px;
-    padding: 0.5rem;
+    min-width: 32px;
+    height: 32px;
+    padding: 0;
     font-size: 0.9rem;
   }
 
