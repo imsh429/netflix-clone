@@ -257,13 +257,13 @@ const handleToggle = () => {
 .poster-container {
   position: relative;
   width: 100%;
-  padding-bottom: 150%; /* 2:3 비율 */
+  aspect-ratio: 2 / 3; /* 2:3 비율 */
   overflow: hidden;
   background: var(--hover-gray);
 }
 
 .poster-image {
-  position: absolute;
+  //position: absolute;
   top: 0;
   left: 0;
   width: 100%;

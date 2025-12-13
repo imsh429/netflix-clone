@@ -1,6 +1,6 @@
 <!-- src/components/movie/MovieGrid.vue -->
 <template>
-  <div class="movie-grid">
+  <div class="movie-grid" :class="{ 'table-mode': viewMode === 'table' }">
     <!-- Iterative Rendering (v-for) - 필수! -->
     <MovieCard
       v-for="movie in movies"
@@ -26,6 +26,7 @@ import MovieCard from './MovieCard.vue'
 defineProps<{
   movies: Movie[]
   wishlistIds: number[]
+  viewMode?: 'table' | 'infinite'
 }>()
 
 // Emits (Bottom-Up)
@@ -47,6 +48,14 @@ const handleToggleWishlist = (movieId: number) => {
   gap: 1.5rem;
   padding: 1rem 0;
   width: 100%;
+}
+
+/* ✅ Table View 모드 - 4열 기준 (포스터 비율 2:3 유지) */
+.movie-grid.table-mode {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  height: 100%;
+  align-content: start;
 }
 
 .empty-state {
@@ -72,10 +81,29 @@ const handleToggleWishlist = (movieId: number) => {
 }
 
 /* ==================== Responsive ==================== */
+
+/* Table View 반응형 - 포스터 비율 유지 */
+@media (max-width: 1400px) {
+  .movie-grid.table-mode {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .movie-grid.table-mode {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
 @media (max-width: 768px) {
   .movie-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
+  }
+
+  .movie-grid.table-mode {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
