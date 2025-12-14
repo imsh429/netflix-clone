@@ -55,7 +55,7 @@ Netflix 스타일의 UI/UX를 구현한 영화 추천 SPA(Single Page Applicatio
 
 ```bash
 git clone <repository-url>
-cd netflix-demo
+cd netflix-clone
 ```
 
 ### 2. 의존성 설치
