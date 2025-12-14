@@ -94,7 +94,7 @@
           </div>
         </div>
 
-        <!-- Statistics (가산점) -->
+        <!-- Statistics -->
         <div v-if="wishlistCount > 0" class="statistics">
           <h2>
             <i class="fas fa-chart-bar"></i>
@@ -328,6 +328,8 @@ onMounted(() => {
 .sort-options label {
   font-weight: 600;
   color: var(--text-gray);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .sort-options select {
@@ -368,7 +370,7 @@ onMounted(() => {
 /* ==================== Wishlist Grid ==================== */
 .wishlist-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1.5rem;
   margin-bottom: 3rem;
 }
@@ -571,29 +573,72 @@ onMounted(() => {
     font-size: 1.8rem;
   }
 
+  .page-header p {
+    font-size: 1rem;
+  }
+
+  /* ✅ Actions Bar 모바일 최적화 */
   .actions-bar {
     flex-direction: column;
     gap: 1rem;
     align-items: stretch;
   }
 
+  /* ✅ 정렬 옵션 - 가로 유지, 텍스트 세로 방지 */
   .sort-options {
-    flex-direction: column;
-    align-items: stretch;
     gap: 0.5rem;
+    align-items: center;
+  }
+
+  .sort-options label {
+    font-size: 0.9rem;
+    white-space: nowrap;  /* ✅ 줄바꿈 방지 */
+    flex-shrink: 0;  /* ✅ 크기 축소 방지 */
   }
 
   .sort-options select {
-    width: 100%;
+    flex: 1;  /* ✅ 남은 공간 차지 */
+    font-size: 0.9rem;
   }
 
+  /* ✅ 버튼 전체 너비 */
+  .clear-all-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* ✅ Grid 2열 */
   .wishlist-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
   }
 
+  /* ✅ Stats 모바일 최적화 */
+  .statistics h2 {
+    font-size: 1.5rem;
+  }
+
   .stats-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
   }
 }
 
@@ -603,6 +648,16 @@ onMounted(() => {
     gap: 0.5rem;
   }
 
+  .page-header p {
+    font-size: 0.9rem;
+  }
+
+  /* ✅ 작은 화면 1열 */
+  .wishlist-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Empty State */
   .empty-content i {
     font-size: 3.5rem;
   }
@@ -613,6 +668,31 @@ onMounted(() => {
 
   .empty-content p {
     font-size: 1rem;
+  }
+
+  .browse-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  /* ✅ Stats 더 작게 */
+  .stat-card {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .stat-icon {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+
+  .stat-value {
+    font-size: 1rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
   }
 }
 </style>
